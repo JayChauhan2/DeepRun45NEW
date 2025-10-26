@@ -9,9 +9,9 @@ export default function Index() {
   const buttonTextColor = started ? "white" : "#233e90";
   const tableHead = ['Date', 'Start Time', 'Duration'];
   const tableData = [
-    ['2025-10-08', '09:00', '1h 30m'],
-    ['2025-10-07', '14:15', '45m'],
-    ['2025-10-06', '17:00', '2h 10m'],
+    ['2025-10-08', '9:38 AM', '1h 30m'],
+    ['2025-10-07', '12:42 PM', '45m'],
+    ['2025-10-06', '5:57 PM', '2h 10m'],
   ];
 
   const onPress = () => {
