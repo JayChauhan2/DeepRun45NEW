@@ -77,8 +77,14 @@ export default function Index() {
       // 🛑 Stop tracking — record the session
       setStarted(false);
       if (startTimestamp) {
-        const endTime = new Date();
         const duration = formatTime(time);
+
+        // 🌙 Night driving check
+        const startHour = startTimestamp.getHours(); // 0-23
+        const startMinute = startTimestamp.getMinutes();
+        if (startHour > 18 || startHour < 6 || (startHour === 18 && startMinute >= 30)) {
+          duration += ' 🌙';
+        }
 
         const dateStr = startTimestamp.toLocaleDateString('en-US', {
           month: 'short', // Oct
