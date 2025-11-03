@@ -7,7 +7,7 @@ export default function Index() {
   const [started, setStarted] = useState(false);
   const buttonBackgroundColor = started ? "#233e90" : "white";
   const buttonTextColor = started ? "white" : "#233e90";
-  const tableHead = ['Date', 'Start Time', 'Duration'];
+  const tableHead = ['Date', 'Start Time', 'Duration', 'Verified'];
   const tableData = [
     ['2025-10-08', '09:00', '1h 30m'],
     ['2025-10-07', '14:15', '45m'],
