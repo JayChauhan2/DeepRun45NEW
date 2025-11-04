@@ -123,8 +123,3 @@ This project is open-source under the MIT License.
 * Currently, verification status (`✅`/`❌`) is manual and not linked to any official system.
 * App is optimized for mobile use with Expo.
 
----
-
-If you want, I can also create a **shorter, “app store style” README** version suitable for GitHub that emphasizes usage and screenshots. It will look cleaner for casual users.
-
-Do you want me to do that as well?
