@@ -129,7 +129,8 @@ export default function Index() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, marginTop: 40}}>
+    
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Driving Hours Tracker</Text>
       
