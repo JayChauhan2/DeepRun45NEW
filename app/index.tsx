@@ -42,19 +42,53 @@ export default function Index() {
   useEffect(() => {
     loadTableData();
   }, []);
+  
+  useEffect(() => {
+    const restoreTimer = async () => {
+      const saved = await AsyncStorage.getItem('@timerState');
+      if (saved) {
+        const { started, startTimestamp } = JSON.parse(saved);
+        if (started && startTimestamp) {
+          setStarted(true);
+          const restoredStart = new Date(startTimestamp);
+          setStartTimestamp(restoredStart);
+          const now = new Date();
+          const elapsed = Math.floor((now.getTime() - restoredStart.getTime()) / 1000);
+          setTime(elapsed);
+        }
+      }
+    };
+    restoreTimer();
+  }, []);
+  
 
   // --- Timer effect ---
+  // useEffect(() => {
+  //   let interval: NodeJS.Timeout;
+
+  //   if (started) {
+  //     interval = setInterval(() => {
+  //       setTime(prev => prev + 1);
+  //     }, 1000);
+  //   }
+
+  //   return () => clearInterval(interval);
+  // }, [started]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
-    if (started) {
+  
+    if (started && startTimestamp) {
       interval = setInterval(() => {
-        setTime(prev => prev + 1);
+        const now = new Date();
+        const elapsed = Math.floor((now.getTime() - startTimestamp.getTime()) / 1000);
+        setTime(elapsed);
       }, 1000);
     }
-
+  
     return () => clearInterval(interval);
-  }, [started]);
+  }, [started, startTimestamp]);
+  
 
 
   const formatTime = (t: number) => {
@@ -117,43 +151,97 @@ export default function Index() {
     return `${hours}h ${minutes}m ${seconds}s`;
   };
 
-  const onPress = () => {
+  // const onPress = () => {
+  //   if (!started) {
+  //     // 🕒 Start tracking
+  //     setStarted(true);
+  //     setStartTimestamp(new Date());
+  //     setTime(0); // test time HERE
+  //   } else {
+  //     // 🛑 Stop tracking — record the session
+  //     setStarted(false);
+  //     if (startTimestamp) {
+  //       const duration = formatTime(time);
+
+  //       // 🌙 Night driving check
+  //       const startHour = startTimestamp.getHours(); // 0-23
+  //       const startMinute = startTimestamp.getMinutes();
+  //       if (startHour > 18 || startHour < 6 || (startHour === 18 && startMinute >= 30)) {
+  //         duration += ' 🌙';
+  //       }
+
+  //       const dateStr = startTimestamp.toLocaleDateString('en-US', {
+  //         month: 'short', // Oct
+  //         day: 'numeric', // 8
+  //         year: 'numeric' // 2025
+  //       });
+  //       const startTimeStr = startTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  //       const newEntry = [dateStr, startTimeStr, duration]; // not verified yet
+  //       setTableData(prev => {
+  //         const updated = [newEntry, ...prev];
+  //         saveTableData(updated);
+  //         return updated;
+        
+  //       }); // add to top
+  //     }
+  //     setStartTimestamp(null);
+  //   }
+  // };
+
+  const onPress = async () => {
     if (!started) {
-      // 🕒 Start tracking
+      // 🕒 START TIMER
+      const newStart = new Date();
       setStarted(true);
-      setStartTimestamp(new Date());
-      setTime(0); // test time HERE
+      setStartTimestamp(newStart);
+      setTime(0);
+  
+      // Save timer state persistently
+      await AsyncStorage.setItem('@timerState', JSON.stringify({
+        started: true,
+        startTimestamp: newStart.toISOString(),
+      }));
+  
     } else {
-      // 🛑 Stop tracking — record the session
+      // 🛑 STOP TIMER
       setStarted(false);
+  
+      // Clear persisted timer state
+      await AsyncStorage.removeItem('@timerState');
+  
       if (startTimestamp) {
-        const duration = formatTime(time);
-
+        const now = new Date();
+        const elapsedSeconds = Math.floor((now.getTime() - startTimestamp.getTime()) / 1000);
+        const duration = formatTime(elapsedSeconds);
+  
         // 🌙 Night driving check
-        const startHour = startTimestamp.getHours(); // 0-23
+        const startHour = startTimestamp.getHours();
         const startMinute = startTimestamp.getMinutes();
+        let durationLabel = duration;
         if (startHour > 18 || startHour < 6 || (startHour === 18 && startMinute >= 30)) {
-          duration += ' 🌙';
+          durationLabel += ' 🌙';
         }
-
+  
         const dateStr = startTimestamp.toLocaleDateString('en-US', {
-          month: 'short', // Oct
-          day: 'numeric', // 8
-          year: 'numeric' // 2025
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
         });
         const startTimeStr = startTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const newEntry = [dateStr, startTimeStr, duration]; // not verified yet
+  
+        const newEntry = [dateStr, startTimeStr, durationLabel];
         setTableData(prev => {
           const updated = [newEntry, ...prev];
           saveTableData(updated);
           return updated;
-        
-        }); // add to top
+        });
       }
+  
       setStartTimestamp(null);
     }
   };
+  
 
   const exportHours = async () => {
 
