@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'; // For the trash icon (if using Expo)
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing'; // ✅ add this import at the top
 import { useEffect, useState } from "react";
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Row, Table } from 'react-native-table-component';
@@ -305,47 +304,48 @@ export default function Index() {
 
   /////////////////
   const handleManualAdd = () => {
-    if (!manualDuration) return;
-
-    const durationMinutes = parseInt(manualDuration, 10);
-    if (isNaN(durationMinutes)) return;
-
-    // Build duration string
-    const h = Math.floor(durationMinutes / 60);
-    const m = durationMinutes % 60;
+    // Must have at least some time
+    const h = Number(hours) || 0;
+    const m = Number(minutes) || 0;
+  
+    if (h === 0 && m === 0) return; // prevent "0m" entries
+  
     let duration = "";
     if (h > 0) duration += `${h}h `;
     duration += `${m}m`;
-
+  
     // 🌙 Night check
     const hr = manualStartTime.getHours();
     const min = manualStartTime.getMinutes();
     if (hr > 18 || hr < 6 || (hr === 18 && min >= 30)) {
       duration += " 🌙";
     }
-
+  
     const dateStr = manualDate.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-
+  
     const startTimeStr = manualStartTime.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-
+  
     const newEntry = [dateStr, startTimeStr, duration];
-
+  
     setTableData(prev => {
       const updated = [newEntry, ...prev];
       saveTableData(updated);
       return updated;
     });
-
+  
+    // Reset
     setManualVisible(false);
-    setManualDuration("");
+    setHours(0);
+    setMinutes(0);
   };
+  
 
 
   return (
@@ -442,7 +442,7 @@ export default function Index() {
         visible={manualVisible}
         onRequestClose={() => setManualVisible(false)}
       >
-        <View style={styles.modalBackground}>
+        <KeyboardAvoidingView style={styles.modalBackground} behavior="padding">
           <View style={styles.modalContainer}>
 
             <Text style={{ fontSize: 18, marginBottom: 10, fontWeight: 'bold' }}>Add Driving Session</Text>
@@ -470,41 +470,41 @@ export default function Index() {
             />
 
             {/* DURATION INPUT */}
-            {/* Wheel pickers */}
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              {/* Hours Picker */}
-              <View style={{ flex: 1 }}>
+              {/* Hours Input */}
+              <View style={{ flex: 1, marginRight: 10 }}>
                 <Text>Hours</Text>
-                <Picker
-                  selectedValue={hours}
-                  onValueChange={(value) => setHours(value)}
-                >
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <Picker.Item key={i} label={`${i}`} value={i} />
-                  ))}
-                </Picker>
+                <TextInput
+                  value={hours.toString()}
+                  onChangeText={(text) => { const cleaned = text.replace(/[^0-9]/g, ""); setHours(cleaned ? Number(cleaned) : 0); }}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#ccc",
+                    padding: 10,
+                    borderRadius: 6,
+                  }}
+                />
               </View>
 
-              {/* Minutes Picker */}
-              <View style={{ flex: 1 }}>
+              {/* Minutes Input */}
+              <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text>Minutes</Text>
-                <Picker
-                  selectedValue={minutes}
-                  onValueChange={(value) => setMinutes(value)}
-                >
-                  {Array.from({ length: 60 }, (_, i) => (
-                    <Picker.Item key={i} label={`${i}`} value={i} />
-                  ))}
-                </Picker>
+                <TextInput
+                  value={minutes.toString()}
+                  onChangeText={(text) => { const cleaned = text.replace(/[^0-9]/g, ""); setMinutes(cleaned ? Number(cleaned) : 0); }}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#ccc",
+                    padding: 10,
+                    borderRadius: 6,
+                  }}
+                />
               </View>
             </View>
-
-            {/* Optional: display selected duration */}
-            <Text style={{ marginTop: 10 }}>
-              Selected Duration: {hours}h {minutes}m
-            </Text>
-          
-
 
             {/* BUTTONS */}
             <View style={styles.modalButtonRow}>
@@ -518,7 +518,7 @@ export default function Index() {
             </View>
 
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
     <View style={styles.bottomSpacer}></View>
