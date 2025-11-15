@@ -630,6 +630,9 @@ const styles = StyleSheet.create({
   },
   closeButtonText: { color: '#233e90', fontSize: 14 },
   exportButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
     backgroundColor: '#233e90',
     paddingVertical: 8,
