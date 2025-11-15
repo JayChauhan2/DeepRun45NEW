@@ -346,8 +346,53 @@ export default function Index() {
     setMinutes(0);
   };
   
-
-
+  const getTotalHoursNumber = () => {
+    let totalSeconds = 0;
+  
+    tableData.forEach(row => {
+      const durationStr = row[2].replace('🌙', '').trim();
+      const hMatch = durationStr.match(/(\d+)h/);
+      const mMatch = durationStr.match(/(\d+)m/);
+      const sMatch = durationStr.match(/(\d+)s/);
+  
+      const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+      const m = mMatch ? parseInt(mMatch[1], 10) : 0;
+      const s = sMatch ? parseInt(sMatch[1], 10) : 0;
+  
+      totalSeconds += h * 3600 + m * 60 + s;
+    });
+  
+    return totalSeconds / 3600; // return HOURS as decimal
+  };
+  
+  const getTotalNightHoursNumber = () => {
+    let totalSeconds = 0;
+  
+    tableData.forEach(row => {
+      const durationStr = row[2];
+      if (durationStr.includes("🌙")) {
+        const clean = durationStr.replace("🌙", "").trim();
+        const hMatch = clean.match(/(\d+)h/);
+        const mMatch = clean.match(/(\d+)m/);
+        const sMatch = clean.match(/(\d+)s/);
+  
+        const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+        const m = mMatch ? parseInt(mMatch[1], 10) : 0;
+        const s = sMatch ? parseInt(sMatch[1], 10) : 0;
+  
+        totalSeconds += h * 3600 + m * 60 + s;
+      }
+    });
+  
+    return totalSeconds / 3600; // return HOURS as decimal
+  };
+  
+  const totalHoursNum = getTotalHoursNumber();
+  const totalNightNum = getTotalNightHoursNumber();
+  
+  const hasNightRequirement = totalNightNum >= 15;
+  const hasTotalRequirement = totalHoursNum >= 45 && hasNightRequirement;
+  
   return (
     <GestureHandlerRootView style={{ flex: 1, marginTop: 40}}>
     
@@ -364,8 +409,8 @@ export default function Index() {
 
       <Text style={styles.tableHeader}>My Activity</Text>
       
-      <Text style={{paddingTop: 6, fontSize: 10, color: 'lightgrey', fontStyle: 'italic'}}>My total hours: {getTotalHours()} (45h required) </Text>
-      <Text style={{paddingTop: 6, fontSize: 10, color: 'lightgrey', fontStyle: 'italic'}}>My total night 🌙 hours: {getTotalNightTime()} (15h required) </Text>
+      <Text style={{ paddingTop: 6, fontSize: 10, color: 'lightgrey', fontStyle: 'italic' }}> My total hours: {getTotalHours()} (45h required) {hasTotalRequirement ? " ✅" : ""} </Text>
+      <Text style={{ paddingTop: 6, fontSize: 10, color: 'lightgrey', fontStyle: 'italic' }}> My total night 🌙 hours: {getTotalNightTime()} (15h required) {hasNightRequirement ? " ✅" : ""} </Text>
       
       <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', width: '70%', alignItems: 'center', marginVertical: 10 }}>
         <TouchableOpacity style={styles.manualButton} onPress={() => setManualVisible(true)}>
